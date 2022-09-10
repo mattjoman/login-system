@@ -1,0 +1,40 @@
+version: '3'
+services:
+        web:
+                image: nginx:latest
+                volumes:
+                        - ./nginx/conf/:/etc/nginx/conf.d/
+                        - ./nginx/html/:/var/www/html/
+                ports:
+                        - 80:80
+                networks:
+                        - internal
+                depends_on:
+                        - node
+        node:
+                build:
+                        context: ./node
+                        dockerfile: Dockerfile
+                expose:
+                        - "3000"
+                networks:
+                        - internal
+                depends_on:
+                        - database
+        database:
+                image: mysql:latest
+                environment:
+                        - MYSQL_ROOT_PASSWORD=test123
+                volumes:
+                        - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+                expose:
+                        - "3306"
+                ports:
+                        - 3306:3306
+                networks:
+                        - internal
+
+networks:
+        internal:
+                driver: bridge
+
