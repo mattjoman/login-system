@@ -6,7 +6,7 @@ services:
                         - ./nginx/conf/:/etc/nginx/conf.d/
                         - ./nginx/html/:/var/www/html/
                 ports:
-                        - 80:80
+                        - 8080:80 # host:container
                 networks:
                         - internal
                 depends_on:
@@ -27,6 +27,7 @@ services:
                         - MYSQL_ROOT_PASSWORD=test123
                 volumes:
                         - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+                        - dbVolume:/var/lib/mysql
                 expose:
                         - "3306"
                 ports:
@@ -34,6 +35,8 @@ services:
                 networks:
                         - internal
 
+volumes:
+        dbVolume:
 networks:
         internal:
                 driver: bridge

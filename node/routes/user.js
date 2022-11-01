@@ -94,10 +94,12 @@ async function createAccount(request, response) {
   } catch (err) {
     console.log(err);
     response.status(500).send();
+    return;
   }
   if (dbResult1.length > 0) {
     console.log('Email is not unique');
     response.status(403).send('Email is not unique');
+    return;
   }
 
   // query database to insert new user
@@ -108,10 +110,12 @@ async function createAccount(request, response) {
   } catch (err) {
     console.log(err);
     response.status(500).send();
+    return;
   }
   console.log(dbResult2);
   console.log("Secret: " + process.env.ACCESS_TOKEN_SECRET);
   response.status(201).send("Successfully created new account: " + process.env.ACCESS_TOKEN_SECRET);
+  return;
 }
 
 
@@ -132,16 +136,20 @@ async function login(request, response) {
   } catch (err) {
     console.log(err);
     response.status(500).send(err);
+    return;
   }
 
   // test for bad conditions
-  if (!comparePassword(password, dbResult1[0].password)) {
-    response.status(403).send('Incorrect password');
-  }
   if (dbResult1.length == 0) {
     response.status(403).send('No users with that email');
+    return;
   } else if (dbResult1.length > 1) {
     response.status(403).send('Multiple users with that email');
+    return;
+  }
+  if (!comparePassword(password, dbResult1[0].password)) {
+    response.status(403).send('Incorrect password');
+    return;
   }
 
   // create user object, generate token and send to the client
@@ -151,6 +159,7 @@ async function login(request, response) {
   const token = generateAccessToken(user);
   console.log(token);
   response.status(201).json({accessToken: token});
+  return;
 }
 
 
