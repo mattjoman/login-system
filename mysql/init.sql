@@ -6,6 +6,7 @@ CREATE TABLE users (
 	name VARCHAR(32) NOT NULL,
 	email VARCHAR(32) NOT NULL,
 	password VARCHAR(512) NOT NULL,
+	admin INT NOT NULL,
 	communities VARCHAR(8192)
 );
 

@@ -1,14 +1,13 @@
 /********* REQUIRED MODULES *********/
 require('dotenv').config();
-const mysql = require('mysql2'); // Important: use mysql2, not mysql
-const cpm = require('mysql-connection-pool-manager');
+//const cpm = require('mysql-connection-pool-manager');
 const { Router } = require('express');
 const router = Router();
 const jwt = require('jsonwebtoken');
 
 /********* MY MODULES *********/
 const { hashPassword, comparePassword } = require('../helpers/password');
-const { queryDatabase } = require('../helpers/dbQuery');
+const { dbPool, queryDatabase } = require('../helpers/dbQuery');
 const { authenticateToken, generateAccessToken } = require('../helpers/token');
 
 
@@ -36,20 +35,9 @@ router.get('/doWhileLoggedIn/', authenticateToken, doWhileLoggedIn);
 
 
 
-/********* Database connection pool. *********/
 
 
 
-const dbCred = {
-  host:     "database",
-  user:     "root",
-  password: "test123",
-  database: "website"
-};
-const pool = mysql.createPool({
-  ...dbCred,
-  connectionLimit: 10
-});
 
 
 
@@ -69,7 +57,8 @@ const pool = mysql.createPool({
  */
 function doWhileLoggedIn(request, response) {
   console.log("Your JWT has been verified, now do something while logged in!");
-  response.send("Your JWT has been verified, now do something while logged in!");
+  //response.send("Your JWT has been verified, now do something while logged in! " + JSON.stringify(request.user.email));
+  response.json(request.user);
 }
 
 
@@ -78,19 +67,23 @@ function doWhileLoggedIn(request, response) {
  * Create new user account.
  */
 async function createAccount(request, response) {
-  const input = request.body;
+  //const input = request.body;
+
+  // check if the data is provided
+  const name = request.body.name;
+  const email = request.body.email;
+  const password = request.body.password;
+  if (name === undefined || email === undefined || password === undefined) {
+    response.status(500).send("Give name, email and password");
+    return;
+  }
 
   // query database to check if a user with this email already exists
   // move this to separate function 'userExists()'?
-  const inputArray = [
-    input.name,
-    input.email,
-    hashPassword(input.password),
-  ];
   let dbResult1;
   const query1 = 'SELECT * FROM users WHERE email=?';
   try {
-    dbResult1 = await queryDatabase(pool, query1, [input.email]);
+    dbResult1 = await queryDatabase(dbPool, query1, [email]);
   } catch (err) {
     console.log(err);
     response.status(500).send();
@@ -104,9 +97,9 @@ async function createAccount(request, response) {
 
   // query database to insert new user
   let dbResult2;
-  const query2 = 'INSERT INTO users VALUES (?, ?, ?, Null)';
+  const query2 = "INSERT INTO users VALUES (?, ?, ?, 0, Null)"; // create normal user account, not admin
   try {
-    dbResult2 = await queryDatabase(pool, query2, inputArray);
+    dbResult2 = await queryDatabase(dbPool, query2, inputArray);
   } catch (err) {
     console.log(err);
     response.status(500).send();
@@ -124,15 +117,20 @@ async function createAccount(request, response) {
  * User login.
  */
 async function login(request, response) {
+
+  // check if information is provided
   const password = request.body.password;
   const email = request.body.email;
+  if (email === undefined || password === undefined) {
+    response.status(500).send("Give your email and password!");
+    return;
+  }
 
   const query1 = "SELECT * FROM users WHERE email=?";
   let dbResult1;
-
   // try to query the database
   try {
-    dbResult1 = await queryDatabase(pool, query1, [email]);
+    dbResult1 = await queryDatabase(dbPool, query1, [email]);
   } catch (err) {
     console.log(err);
     response.status(500).send(err);
@@ -155,6 +153,7 @@ async function login(request, response) {
   // create user object, generate token and send to the client
   const user = {
     _email: email,
+    _admin: 0 // everyone using this method is logged in as normal user, even if they are an admin
   };
   const token = generateAccessToken(user);
   console.log(token);

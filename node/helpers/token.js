@@ -13,9 +13,7 @@ function authenticateToken(request, response, next) {
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) return response.status(403).send("couldn't verify");
-    request.user = {
-      email: request.body.email, // set request.user
-    };
+    request.user = user; // Add 'user' object to request so we can get info later on.
     next();
   });
 }
@@ -23,7 +21,7 @@ function authenticateToken(request, response, next) {
 /*
 */
 function generateAccessToken(user) {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '60s'});
+  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '100s'});
 }
 
 module.exports = {

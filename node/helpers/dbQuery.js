@@ -1,4 +1,21 @@
+const mysql = require('mysql2'); // Important: use mysql2, not mysql
 const cpm = require('mysql-connection-pool-manager');
+
+/*
+ * Database credentials.
+ */
+const dbCred = {
+  host:     "database",
+  user:     "root",
+  password: "test123",
+  database: "website"
+};
+
+/********* Database connection pool. *********/
+const dbPool = mysql.createPool({
+  ...dbCred,
+  connectionLimit: 10
+});
 
 /* 
  * Returns a promise object.
@@ -17,5 +34,6 @@ function queryDatabase(myPool, myQuery, inputArr=[]) {
 }
 
 module.exports = {
+  dbPool,
   queryDatabase
 };
