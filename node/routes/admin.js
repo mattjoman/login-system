@@ -10,19 +10,8 @@ const { hashPassword, comparePassword } = require('../helpers/password');
 const { dbPool, queryDatabase } = require('../helpers/dbQuery');
 const { authenticateToken, generateAccessToken } = require('../helpers/token');
 
-
-
-
-
-
-
-
-
-/********* /user/ ROUTES *********/
-
-
-
-router.get('/', (request, response) => { response.send('You are at /api/user/') });
+/********* /admin/ ROUTES *********/
+router.get('/', (request, response) => { response.send('You are at /api/admin/') });
 router.post('/createAccount/', createAccount);
 router.post('/login/', login);
 router.get('/doWhileLoggedIn/', authenticateToken, doWhileLoggedIn);
@@ -30,35 +19,24 @@ router.get('/doWhileLoggedIn/', authenticateToken, doWhileLoggedIn);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /********* FUNCTIONS *********/
-
-
 
 /*
  * Middlewear is run before this function to verify the user's JWT.
  */
 function doWhileLoggedIn(request, response) {
-  console.log("Your JWT has been verified, now do something while logged in!");
-  //response.send("Your JWT has been verified, now do something while logged in! " + JSON.stringify(request.user.email));
-  response.json(request.user);
+  console.log("Your JWT has been verified!");
+  user = request.user;
+  if (user === undefined) {
+    response.status(500).send("Send your JWT!");
+    return;
+  }
+  if (user._admin != 1) {
+    response.status(403).send("You are not logged in as an admin!");
+    return;
+  }
+  response.status(201).json(request.user);
+  return;
 }
 
 
@@ -102,7 +80,7 @@ async function createAccount(request, response) {
     hashPassword(password)
   ];
   let dbResult2;
-  const query2 = "INSERT INTO users VALUES (?, ?, ?, 0, Null)"; // create normal user account, not admin
+  const query2 = "INSERT INTO users VALUES (?, ?, ?, 1, Null)"; // create admin account, not admin
   try {
     dbResult2 = await queryDatabase(dbPool, query2, inputArray);
   } catch (err) {
@@ -112,7 +90,7 @@ async function createAccount(request, response) {
   }
   console.log(dbResult2);
   console.log("Secret: " + process.env.ACCESS_TOKEN_SECRET);
-  response.status(201).send("Successfully created new account: " + process.env.ACCESS_TOKEN_SECRET);
+  response.status(201).send("Successfully created new admin account: " + process.env.ACCESS_TOKEN_SECRET);
   return;
 }
 
@@ -154,11 +132,15 @@ async function login(request, response) {
     response.status(403).send('Incorrect password');
     return;
   }
+  if (dbResult1[0].admin != 1) {
+    response.status(403).send("You do not have an admin account!");
+    return;
+  }
 
   // create user object, generate token and send to the client
   const user = {
     _email: email,
-    _admin: 0 // everyone using this method is logged in as normal user, even if they are an admin
+    _admin: 1 // the user is an admin
   };
   const token = generateAccessToken(user);
   console.log(token);
