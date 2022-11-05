@@ -13,6 +13,7 @@ const { authenticateToken, generateAccessToken, initSession, destroySession } = 
 /********* /user/ ROUTES *********/
 router.get('/', (request, response) => { response.send('You are at /api/user/') });
 router.post('/createAccount/', createAccount);
+router.post('/deleteAccount/', deleteAccount);
 router.post('/login/', login);
 router.get('/doWhileLoggedIn/', authenticateToken, doWhileLoggedIn);
 router.post('/logout/', authenticateToken, logout);
@@ -83,6 +84,65 @@ async function createAccount(request, response) {
   response.status(201).send("Successfully created new account: " + process.env.ACCESS_TOKEN_SECRET);
   return;
 }
+
+
+/*
+ * Delete user account.
+ */
+async function deleteAccount(request, response) {
+  //const input = request.body;
+
+  // check if the data is provided
+  const email = request.body.email;
+  const password = request.body.password;
+  if (email === undefined || password === undefined) {
+    return response.status(500).send("Give name, email and password");
+  }
+
+  // check the user exists and verify the password
+  let dbResult1;
+  const query1 = 'SELECT * FROM users WHERE email=?';
+  try {
+    dbResult1 = await queryDatabase(dbPool, query1, [email]);
+  } catch (err) {
+    console.log(err);
+    return response.status(500).send();
+  }
+  if (dbResult1.length > 1) {
+    console.log('Email is not unique!');
+    return response.status(403).send('Email is not unique');
+  } else if (dbResult1.length < 1) {
+    console.log('Email is does not exist in the DB!');
+    return response.status(403).send();
+  }
+  if (!comparePassword(password, dbResult1[0].password)) {
+    console.log('Incorrect password!');
+    return response.status(403).send('Incorrect password');
+  }
+  
+  // delete user session if it exists
+  try {
+    await destroySession({ _email: email });
+  } catch (err) {
+    console.log('Could not destroy session.');
+    return response.status(502).send();
+  }
+
+  // delete user from the DB
+  let dbResult2;
+  const query2 = 'DELETE FROM users WHERE email=?'
+  try {
+    await queryDatabase(dbPool, query2, [email]);
+  } catch (err) {
+    console.log('Could not delete user from the DB!');
+    return response.status(502).send();
+  }
+
+  console.log("User account successfully deleted.");
+  return response.status(201).send();
+}
+
+
 
 
 

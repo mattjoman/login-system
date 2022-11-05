@@ -1,9 +1,7 @@
 # login-system
 
 # TODO
-- Make a logout route and corresponding functionality.
 - Edit admin.js to use the new refresh token system.
-- Edit the login functions in user.js and admin.js to send the tokens in headers rather than in the body.
 - Move the refresh_tokens table to a Redis cache.
 - Make a cron container for sending requests to the refresh_tokens db/table to delete all expired refresh tokens.
 - Make a front-end app in react, served by a dedicated container (sitting behind the nginx container).
