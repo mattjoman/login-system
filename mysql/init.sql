@@ -10,6 +10,11 @@ CREATE TABLE users (
 	communities VARCHAR(8192)
 );
 
+CREATE TABLE refresh_tokens (
+	email VARCHAR(32) NOT NULL,
+	JWT VARCHAR(256) NOT NULL
+);
+
 CREATE TABLE EX6 (
 	userEmail INT NOT NULL,
 	postContent VARCHAR(1024) NOT NULL,

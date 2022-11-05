@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 /********* MY MODULES *********/
 const { hashPassword, comparePassword } = require('../helpers/password');
 const { dbPool, queryDatabase } = require('../helpers/dbQuery');
-const { authenticateToken, generateAccessToken } = require('../helpers/token');
+const { authenticateToken, generateAccessToken, initSession } = require('../helpers/token');
 
 
 
@@ -160,9 +160,11 @@ async function login(request, response) {
     _email: email,
     _admin: 0 // everyone using this method is logged in as normal user, even if they are an admin
   };
-  const token = generateAccessToken(user);
-  console.log(token);
-  response.status(201).json({accessToken: token});
+  let { accessToken, refreshToken } = await initSession(user);
+  console.log("Access token and refresh token:");
+  console.log(accessToken);
+  console.log(refreshToken);
+  response.status(201).json({ accessToken: accessToken, refreshToken: refreshToken });
   return;
 }
 
