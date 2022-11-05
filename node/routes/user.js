@@ -8,49 +8,16 @@ const jwt = require('jsonwebtoken');
 /********* MY MODULES *********/
 const { hashPassword, comparePassword } = require('../helpers/password');
 const { dbPool, queryDatabase } = require('../helpers/dbQuery');
-const { authenticateToken, generateAccessToken, initSession } = require('../helpers/token');
-
-
-
-
-
-
-
-
+const { authenticateToken, generateAccessToken, initSession, destroySession } = require('../helpers/token');
 
 /********* /user/ ROUTES *********/
-
-
-
 router.get('/', (request, response) => { response.send('You are at /api/user/') });
 router.post('/createAccount/', createAccount);
 router.post('/login/', login);
 router.get('/doWhileLoggedIn/', authenticateToken, doWhileLoggedIn);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+router.post('/logout/', authenticateToken, logout);
 
 /********* FUNCTIONS *********/
-
-
 
 /*
  * Middlewear is run before this function to verify the user's JWT.
@@ -59,6 +26,7 @@ function doWhileLoggedIn(request, response) {
   console.log("Your JWT has been verified, now do something while logged in!");
   //response.send("Your JWT has been verified, now do something while logged in! " + JSON.stringify(request.user.email));
   response.json(request.user);
+  return;
 }
 
 
@@ -161,14 +129,25 @@ async function login(request, response) {
     _admin: 0 // everyone using this method is logged in as normal user, even if they are an admin
   };
   let { accessToken, refreshToken } = await initSession(user);
-  console.log("Access token and refresh token:");
-  console.log(accessToken);
-  console.log(refreshToken);
-  response.status(201).json({ accessToken: accessToken, refreshToken: refreshToken });
+  response.setHeader('accesstoken', accessToken);
+  response.setHeader('refreshtoken', refreshToken);
+  response.status(201).send();
   return;
 }
 
 
+async function logout(request, response) {
+  response.setHeader('accesstoken', null);
+  response.setHeader('refreshtoken', null);
+  const user = request.user;
+  try {
+    await destroySession(user);
+  } catch (err) {
+    console.log(err);
+    return response.send("Could not destroy session.");
+  }
+  return response.send("User has successfully logged out. Now delete your tokens!");
+}
 
 
 

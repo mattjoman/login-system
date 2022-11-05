@@ -107,8 +107,17 @@ async function initSession(user) {
   };
 }
 
+async function destroySession(user) {
+  // delete any pre-existing sessions for the user
+  let dbResult1;
+  const query1 = 'DELETE FROM refresh_tokens WHERE email=?';
+  dbResult1 = await queryDatabase(dbPool, query1, [user._email]);
+  return;
+}
+
 module.exports = {
   authenticateToken,
   generateAccessToken,
-  initSession
+  initSession,
+  destroySession
 };
