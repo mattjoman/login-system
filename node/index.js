@@ -3,6 +3,7 @@ const moment = require('moment');
 
 const userRoute = require('./routes/user');
 const adminRoute = require('./routes/admin');
+const accountRoute = require('./routes/account');
 
 
 const app = express();
@@ -11,6 +12,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.use('/api/account', accountRoute);
 app.use('/api/user', userRoute);
 app.use('/api/admin', adminRoute);
 
