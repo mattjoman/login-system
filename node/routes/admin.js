@@ -25,7 +25,7 @@ function doWhileLoggedIn(request, response) {
   if (user._admin != 1) {
     return response.status(403).send("You are not logged in as an admin!");
   }
-  return response.status(201).json(request.user);
+  return response.status(200).json(request.user);
 }
 
 /*
