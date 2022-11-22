@@ -1,7 +1,9 @@
 # login-system
 
 # TODO
-- Edit admin.js to use the new refresh token system.
+- Refactor the 'authenticateToken()' function.
+- Why is the 'refreshSession()' function empty?
+- Make sure it does not crash if the user sends invalid/no input.
 - Move the refresh_tokens table to a Redis cache.
 - Make a cron container for sending requests to the refresh_tokens db/table to delete all expired refresh tokens.
 - Make a front-end app in react, served by a dedicated container (sitting behind the nginx container).

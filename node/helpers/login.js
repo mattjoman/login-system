@@ -19,8 +19,7 @@ async function login(request, response, isAdmin) {
   const password = request.body.password;
   const email = request.body.email;
   if (email === undefined || password === undefined) {
-    response.status(500).send("Give your email and password!");
-    return;
+    return response.status(500).send("Give your email and password!");
   }
 
   const query1 = "SELECT * FROM users WHERE email=?";
@@ -30,21 +29,17 @@ async function login(request, response, isAdmin) {
     dbResult1 = await queryDatabase(dbPool, query1, [email]);
   } catch (err) {
     console.log(err);
-    response.status(500).send(err);
-    return;
+    return response.status(500).send(err);
   }
 
   // test for bad conditions
   if (dbResult1.length == 0) {
-    response.status(403).send('No users with that email');
-    return;
+    return response.status(403).send('No users with that email');
   } else if (dbResult1.length > 1) {
-    response.status(403).send('Multiple users with that email');
-    return;
+    return response.status(403).send('Multiple users with that email');
   }
   if (!comparePassword(password, dbResult1[0].password)) {
-    response.status(403).send('Incorrect password');
-    return;
+    return response.status(403).send('Incorrect password');
   }
 
   // create user object, generate token and send to the client
@@ -57,8 +52,7 @@ async function login(request, response, isAdmin) {
   let { accessToken, refreshToken } = await initSession(user);
   response.setHeader('accesstoken', accessToken);
   response.setHeader('refreshtoken', refreshToken);
-  response.status(201).send();
-  return;
+  return response.status(201).send();
 }
 
 

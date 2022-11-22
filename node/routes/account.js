@@ -36,8 +36,7 @@ async function createAccount(request, response, isAdmin) {
   const email = request.body.email;
   const password = request.body.password;
   if (name === undefined || email === undefined || password === undefined) {
-    response.status(500).send("Give name, email and password");
-    return;
+    return response.status(500).send("Give name, email and password");
   }
 
   // query database to check if a user with this email already exists
@@ -48,13 +47,11 @@ async function createAccount(request, response, isAdmin) {
     dbResult1 = await queryDatabase(dbPool, query1, [email]);
   } catch (err) {
     console.log(err);
-    response.status(500).send();
-    return;
+    return response.status(500).send();
   }
   if (dbResult1.length > 0) {
     console.log('Email is not unique');
-    response.status(403).send('Email is not unique');
-    return;
+    return response.status(403).send('Email is not unique');
   }
 
   // query database to insert new user
@@ -74,13 +71,11 @@ async function createAccount(request, response, isAdmin) {
     dbResult2 = await queryDatabase(dbPool, query2, inputArray);
   } catch (err) {
     console.log(err);
-    response.status(500).send();
-    return;
+    return response.status(500).send();
   }
   console.log(dbResult2);
   console.log("Secret: " + process.env.ACCESS_TOKEN_SECRET);
-  response.status(201).send("Successfully created new account: " + process.env.ACCESS_TOKEN_SECRET);
-  return;
+  return response.status(201).send("Successfully created new account: " + process.env.ACCESS_TOKEN_SECRET);
 }
 
 

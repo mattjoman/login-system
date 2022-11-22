@@ -2,20 +2,13 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const { dbPool, queryDatabase } = require('./dbQuery');
 
-async function refreshSession(err, user) {
-  if (!err) {
-  }
-};
-
 /*
  * Middlewear.
  */
 async function authenticateToken(request, response, next) {
   const accessToken = request.headers['accesstoken'];
   const refreshToken = request.headers['refreshtoken'];
-
-  if (accessToken == null) return response.status(401).json(request.headers);
-  if (refreshToken == null) return response.status(401).json(request.headers);
+  if (accessToken == null || refreshToken == null) return response.status(401).json(request.headers);
 
   jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
     if (!err) {
@@ -30,42 +23,42 @@ async function authenticateToken(request, response, next) {
       response.setHeader('accesstoken', newTokens.accessToken);
       response.setHeader('refreshtoken', newTokens.refreshToken);
       next();
-
-    } else {
-      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, user) => {
-        if (!err) {
-          request.user = user;
-          // check if the user has a session (they may have logged out)
-          const query1 = "SELECT JWT FROM refresh_tokens WHERE email=?";
-          let dbResult1;
-          try {
-            dbResult1 = await queryDatabase(dbPool, query1, [user._email]);
-          } catch (err) {
-            return response.send("Error while querying database!");
-          }
-          if (dbResult1.length != 1) {
-            return response.send("User does not have a session! Must log in!");
-          }
-          if (dbResult1[0].JWT != refreshToken) {
-            return response.send("Refresh token does not match the one in the database");
-          }
-          console.log("User still has a valid session, now creating new tokens.");
-
-          let newTokens;
-          try {
-            newTokens = await initSession({ _email: user._email, _admin: user._admin });
-          } catch (err) {
-            console.log(err);
-            return response.send("Could not refresh the session.");
-          }
-          response.setHeader('accesstoken', newTokens.accessToken);
-          response.setHeader('refreshtoken', newTokens.refreshToken);
-          next();
-        } else {
-          if (err) return response.status(403).send("couldn't verify");
-        }
-      });
+      return;
     }
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, user) => {
+      if (!err) {
+        request.user = user;
+        // check if the user has a session (they may have logged out)
+        const query1 = "SELECT JWT FROM refresh_tokens WHERE email=?";
+        let dbResult1;
+        try {
+          dbResult1 = await queryDatabase(dbPool, query1, [user._email]);
+        } catch (err) {
+          return response.send("Error while querying database!");
+        }
+        if (dbResult1.length != 1) {
+          return response.send("User does not have a session! Must log in!");
+        }
+        if (dbResult1[0].JWT != refreshToken) {
+          return response.send("Refresh token does not match the one in the database");
+        }
+        console.log("User still has a valid session, now creating new tokens.");
+
+        let newTokens;
+        try {
+          newTokens = await initSession({ _email: user._email, _admin: user._admin });
+        } catch (err) {
+          console.log(err);
+          return response.send("Could not refresh the session.");
+        }
+        response.setHeader('accesstoken', newTokens.accessToken);
+        response.setHeader('refreshtoken', newTokens.refreshToken);
+        next();
+        return;
+      }
+      return response.status(403).send("couldn't verify");
+    });
     return;
   });
 }
