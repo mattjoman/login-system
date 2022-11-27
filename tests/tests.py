@@ -5,7 +5,20 @@ import time
 
 from routes import *
 
+def test_status(actual, expected):
+    if actual != expected:
+        print(f"Test failed:\n  Got status code {actual} but expected {expected}.")
+        exit()
+    return
+
+
+
+
+
 def user_create_login_do_do_logout_delete():
+    print()
+    print("="*30)
+    print("Running user_create_login_do_do_logout_delete()...\n\n")
     """ Tests user_login, user_doWhileLoggedIn """
     data = {
         "name": "user",
@@ -13,43 +26,21 @@ def user_create_login_do_do_logout_delete():
         "password": "test123"
     }
 
-    print()
-
     response = user_createAccount(data)
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print()
-
-    print(1)
+    test_status(response.status_code, 201)
     response = user_login(data)
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print(f"accesstoken: {response.headers['accesstoken']}")
-    print()
-
-    print(2)
+    test_status(response.status_code, 200)
     response = user_doWhileLoggedIn(response.headers['accesstoken'], response.headers['refreshtoken'])
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print(f"accesstoken: {response.headers['accesstoken']}")
-    print()
-
-    print(3)
+    test_status(response.status_code, 200)
     response = user_doWhileLoggedIn(response.headers['accesstoken'], response.headers['refreshtoken'])
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print(f"accesstoken: {response.headers['accesstoken']}")
-    print()
-
+    test_status(response.status_code, 200)
     response = user_logout(response.headers['accesstoken'], response.headers['refreshtoken'])
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print(f"accesstoken: {response.headers['accesstoken']}")
-    print()
-
+    test_status(response.status_code, 200)
     response = deleteAccount(data)
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
+    test_status(response.status_code, 201)
+
+    print("\nTest passed.")
+    print("="*30)
     print()
 
     return
@@ -57,47 +48,74 @@ def user_create_login_do_do_logout_delete():
 
 def admin_create_login_do_do_logout_delete():
     """ Tests user_login, user_doWhileLoggedIn """
+    print()
+    print("="*30)
+    print("Running user_create_login_do_do_logout_delete()...\n\n")
     data = {
         "name": "user",
         "email": "user@test.com",
         "password": "test123"
     }
 
-    print()
-
     response = admin_createAccount(data)
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print()
-
+    test_status(response.status_code, 201)
     response = admin_login(data)
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print(f"accesstoken: {response.headers['accesstoken']}")
-    print()
-
+    test_status(response.status_code, 200)
     response = admin_doWhileLoggedIn(response.headers['accesstoken'], response.headers['refreshtoken'])
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print(f"accesstoken: {response.headers['accesstoken']}")
-    print()
-
+    test_status(response.status_code, 200)
     response = admin_doWhileLoggedIn(response.headers['accesstoken'], response.headers['refreshtoken'])
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print(f"accesstoken: {response.headers['accesstoken']}")
-    print()
-
+    test_status(response.status_code, 200)
     response = admin_logout(response.headers['accesstoken'], response.headers['refreshtoken'])
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
-    print(f"accesstoken: {response.headers['accesstoken']}")
+    test_status(response.status_code, 200)
+    response = deleteAccount(data)
+    test_status(response.status_code, 201)
+
+    print("\nTest passed.")
+    print("="*30)
     print()
 
-    #response = user_deleteAccount({ "email": user["email"], "password": user["password"] });
+    return
+
+
+def user_login_as_admin():
+    """ Create user account, try to log in as admin """
+    print()
+    print("="*30)
+    print("Running user_login_as_admin()...\n\n")
+    data = {
+        "name": "user",
+        "email": "user@test.com",
+        "password": "test123"
+    }
+    response = user_createAccount(data)
+    response = admin_login(data)
+    test_status(response.status_code, 403)
     response = deleteAccount(data)
-    print(f"Status code: {response.status_code}")
-    print(f"Body: {response.text}")
+
+    print("\nTest passed.")
+    print("="*30)
+    print()
+
+    return
+
+def user_do_as_admin():
+    """ Create user account, try to log in as admin """
+    print()
+    print("="*30)
+    print("Running user_do_as_admin()...\n\n")
+    data = {
+        "name": "user",
+        "email": "user@test.com",
+        "password": "test123"
+    }
+    response = user_createAccount(data)
+    response = user_login(data)
+    response = admin_doWhileLoggedIn(response.headers['accesstoken'], response.headers['refreshtoken'])
+    test_status(response.status_code, 403)
+    response = deleteAccount(data)
+
+    print("\nTest passed.")
+    print("="*30)
     print()
 
     return
@@ -106,10 +124,11 @@ def admin_create_login_do_do_logout_delete():
 
 
 
-
-
-
 def bad_requests():
+    """Tests with bad bodies."""
+    print()
+    print("="*30)
+    print("Running bad_requests()...\n\n")
     response = user_createAccount(
         {
             "name": "",
@@ -117,15 +136,13 @@ def bad_requests():
             "password": ""
         }
     )
-    if response.status_code != 400:
-        print(f"Expected 400, got {response.status_code}")
-        return
+    test_status(response.status_code, 400)
 
     response = user_createAccount({})
-    if response.status_code != 400:
-        print(f"Expected 400, got {response.status_code}")
-        return
+    test_status(response.status_code, 400)
 
-    print("Test passed")
+    print("\nTest passed.")
+    print("="*30)
+    print()
 
     return

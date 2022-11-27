@@ -38,6 +38,9 @@ async function login(request, response, isAdmin) {
   } else if (dbResult1.length > 1) {
     return response.status(403).send('Multiple users with that email. Please report this.');
   }
+  if (isAdmin && dbResult1[0].admin != 1) {
+    return response.status(403).send('Not an admin account.');
+  }
   if (!comparePassword(password, dbResult1[0].password)) {
     return response.status(403).send('Incorrect password.');
   }
