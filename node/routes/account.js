@@ -36,7 +36,10 @@ async function createAccount(request, response, isAdmin) {
   const email = request.body.email;
   const password = request.body.password;
   if (name === undefined || email === undefined || password === undefined) {
-    return response.status(500).send("Give name, email and password");
+    return response.status(400).send("Give name, email and password");
+  }
+  if (name === "" || email === "" || password === "") {
+    return response.status(400).send("Give name, email and password");
   }
 
   // query database to check if a user with this email already exists
@@ -47,11 +50,10 @@ async function createAccount(request, response, isAdmin) {
     dbResult1 = await queryDatabase(dbPool, query1, [email]);
   } catch (err) {
     console.log(err);
-    return response.status(500).send();
+    return response.status(500).send('Error while checking if user exists in the database.');
   }
   if (dbResult1.length > 0) {
-    console.log('Email is not unique');
-    return response.status(403).send('Email is not unique');
+    return response.status(403).send('Email is not unique.');
   }
 
   // query database to insert new user
@@ -71,11 +73,10 @@ async function createAccount(request, response, isAdmin) {
     dbResult2 = await queryDatabase(dbPool, query2, inputArray);
   } catch (err) {
     console.log(err);
-    return response.status(500).send();
+    return response.status(500).send('Error while adding user to the database.');
   }
-  console.log(dbResult2);
-  console.log("Secret: " + process.env.ACCESS_TOKEN_SECRET);
-  return response.status(201).send("Successfully created new account: " + process.env.ACCESS_TOKEN_SECRET);
+  console.log("Created new user account.");
+  return response.status(201).send();
 }
 
 
@@ -89,7 +90,10 @@ async function deleteAccount(request, response) {
   const email = request.body.email;
   const password = request.body.password;
   if (email === undefined || password === undefined) {
-    return response.status(500).send("Give name, email and password");
+    return response.status(400).send("Give name, email and password");
+  }
+  if (email === "" || password === "") {
+    return response.status(400).send("Give name, email and password");
   }
 
   // check the user exists and verify the password
@@ -99,26 +103,23 @@ async function deleteAccount(request, response) {
     dbResult1 = await queryDatabase(dbPool, query1, [email]);
   } catch (err) {
     console.log(err);
-    return response.status(500).send();
+    return response.status(500).send('Error checking if the user exists in the database.');
   }
   if (dbResult1.length > 1) {
-    console.log('Email is not unique!');
-    return response.status(403).send('Email is not unique');
+    return response.status(403).send('Email is not unique.');
   } else if (dbResult1.length < 1) {
-    console.log('Email is does not exist in the DB!');
-    return response.status(403).send();
+    return response.status(403).send('No user with that email exists.');
   }
   if (!comparePassword(password, dbResult1[0].password)) {
-    console.log('Incorrect password!');
-    return response.status(403).send('Incorrect password');
+    return response.status(403).send('Incorrect password.');
   }
   
   // delete user session if it exists
   try {
     await destroySession({ _email: email });
   } catch (err) {
-    console.log('Could not destroy session.');
-    return response.status(502).send();
+    console.log(err);
+    return response.status(500).send('Error while destroying any user sessions.');
   }
 
   // delete user from the DB
@@ -127,8 +128,8 @@ async function deleteAccount(request, response) {
   try {
     await queryDatabase(dbPool, query2, [email]);
   } catch (err) {
-    console.log('Could not delete user from the DB!');
-    return response.status(502).send();
+    console.log(err);
+    return response.status(500).send('Error deleting user from the database.');
   }
 
   console.log("User account successfully deleted.");

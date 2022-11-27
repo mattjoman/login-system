@@ -18,8 +18,7 @@ router.post('/logout/', authenticateToken, userLogout);
  * Middlewear is run before this function to verify the user's JWT.
  */
 function doWhileLoggedIn(request, response) {
-  console.log("Your JWT has been verified, now do something while logged in!");
-  return response.json(request.user).status(200);
+  return response.status(200).send();
 }
 
 /*

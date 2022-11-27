@@ -18,12 +18,11 @@ async function authenticateToken(request, response, next) {
         newTokens = await initSession({ _email: user._email, _admin: user._admin });
       } catch (err) {
         console.log(err);
-        return response.send("Could not refresh the session.");
+        return response.status(500).send("Could not refresh the session.");
       }
       response.setHeader('accesstoken', newTokens.accessToken);
       response.setHeader('refreshtoken', newTokens.refreshToken);
-      next();
-      return;
+      return next();
     }
 
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, user) => {
@@ -35,13 +34,13 @@ async function authenticateToken(request, response, next) {
         try {
           dbResult1 = await queryDatabase(dbPool, query1, [user._email]);
         } catch (err) {
-          return response.send("Error while querying database!");
+          return response.status(500).send("Error while querying database.");
         }
         if (dbResult1.length != 1) {
-          return response.send("User does not have a session! Must log in!");
+          return response.status(403).send("User does not have a session. Must log in.");
         }
         if (dbResult1[0].JWT != refreshToken) {
-          return response.send("Refresh token does not match the one in the database");
+          return response.status(403).send("Refresh token does not match the one in the database.");
         }
         console.log("User still has a valid session, now creating new tokens.");
 
@@ -50,16 +49,14 @@ async function authenticateToken(request, response, next) {
           newTokens = await initSession({ _email: user._email, _admin: user._admin });
         } catch (err) {
           console.log(err);
-          return response.send("Could not refresh the session.");
+          return response.status(500).send("Error while refreshing the session.");
         }
         response.setHeader('accesstoken', newTokens.accessToken);
         response.setHeader('refreshtoken', newTokens.refreshToken);
-        next();
-        return;
+        return next();
       }
-      return response.status(403).send("couldn't verify");
+      return response.status(403).send("Bad JWT.");
     });
-    return;
   });
 }
 

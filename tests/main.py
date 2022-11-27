@@ -9,3 +9,4 @@ from tests import *
 if __name__ == "__main__":
     user_create_login_do_do_logout_delete()
     admin_create_login_do_do_logout_delete()
+    bad_requests()

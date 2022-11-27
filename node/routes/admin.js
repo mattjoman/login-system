@@ -20,12 +20,12 @@ function doWhileLoggedIn(request, response) {
   console.log("Your JWT has been verified!");
   user = request.user;
   if (user === undefined) {
-    return response.status(500).send("Send your JWT!");
+    return response.status(400).send("Bad request body.");
   }
   if (user._admin != 1) {
-    return response.status(403).send("You are not logged in as an admin!");
+    return response.status(403).send("You are not logged in as an admin.");
   }
-  return response.status(200).json(request.user);
+  return response.status(200).send();
 }
 
 /*

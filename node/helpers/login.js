@@ -29,17 +29,17 @@ async function login(request, response, isAdmin) {
     dbResult1 = await queryDatabase(dbPool, query1, [email]);
   } catch (err) {
     console.log(err);
-    return response.status(500).send(err);
+    return response.status(500).send('Error while checking the user exists in the database.');
   }
 
   // test for bad conditions
   if (dbResult1.length == 0) {
-    return response.status(403).send('No users with that email');
+    return response.status(403).send('No users with that email.');
   } else if (dbResult1.length > 1) {
-    return response.status(403).send('Multiple users with that email');
+    return response.status(403).send('Multiple users with that email. Please report this.');
   }
   if (!comparePassword(password, dbResult1[0].password)) {
-    return response.status(403).send('Incorrect password');
+    return response.status(403).send('Incorrect password.');
   }
 
   // create user object, generate token and send to the client
@@ -52,7 +52,7 @@ async function login(request, response, isAdmin) {
   let { accessToken, refreshToken } = await initSession(user);
   response.setHeader('accesstoken', accessToken);
   response.setHeader('refreshtoken', refreshToken);
-  return response.status(201).send();
+  return response.status(200).send();
 }
 
 
@@ -64,9 +64,9 @@ async function logout(request, response) {
     await destroySession(user);
   } catch (err) {
     console.log(err);
-    return response.send("Could not destroy session.");
+    return response.status(500).send("Error while destroying user session.");
   }
-  return response.send("User has successfully logged out. Now delete your tokens!");
+  return response.status(200).send("User has successfully logged out. Now delete your tokens!");
 }
 
 
