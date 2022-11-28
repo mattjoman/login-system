@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 /********* MY MODULES *********/
 const { hashPassword, comparePassword } = require('../helpers/password');
 const { dbPool, queryDatabase } = require('../helpers/dbQuery');
-const { authenticateToken, generateAccessToken, initSession, destroySession } = require('../helpers/token');
+const { authenticateToken, generateAccessToken, initSession, destroySession } = require('../helpers/sessions');
 
 /********* /account/ ROUTES *********/
 router.post('/create/', create);

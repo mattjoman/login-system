@@ -3,8 +3,8 @@ const { Router } = require('express');
 const router = Router();
 
 /********* MY MODULES *********/
-const { login, logout } = require('../helpers/login');
-const { authenticateToken, generateAccessToken, initSession, destroySession } = require('../helpers/token');
+const { login, logout } = require('../helpers/loginLogout');
+const { authenticateToken, generateAccessToken, initSession, destroySession } = require('../helpers/sessions');
 
 /********* /user/ ROUTES *********/
 router.get('/', (request, response) => { response.send('You are at /api/user/') });

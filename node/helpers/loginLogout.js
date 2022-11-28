@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 /********* MY MODULES *********/
 const { hashPassword, comparePassword } = require('./password');
 const { dbPool, queryDatabase } = require('./dbQuery');
-const { authenticateToken, generateAccessToken, initSession, destroySession } = require('./token');
+const { authenticateToken, generateAccessToken, initSession, destroySession } = require('./sessions');
 
 
 /********* FUNCTIONS *********/
