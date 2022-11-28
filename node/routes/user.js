@@ -24,15 +24,15 @@ function doWhileLoggedIn(request, response) {
 /*
  * User login.
  */
-async function userLogin(request, response) {
-  return await login(request, response, false);
+function userLogin(request, response) {
+  return login(request, response, false);
 }
 
 /*
  * User logout.
  */
-async function userLogout(request, response) {
-  return await logout(request, response);
+function userLogout(request, response) {
+  return logout(request, response);
 }
 
 /********* EXPORTS *********/

@@ -17,12 +17,12 @@ router.post('/delete/', deleteAccount);
 
 /********* FUNCTIONS *********/
 
-async function create(request, response) {
-  return await createAccount(request, response, false);
+function create(request, response) {
+  return createAccount(request, response, false);
 }
 
-async function createAdmin(request, response) {
-  return await createAccount(request, response, true);
+function createAdmin(request, response) {
+  return createAccount(request, response, true);
 }
 
 /*

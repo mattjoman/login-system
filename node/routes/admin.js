@@ -31,15 +31,15 @@ function doWhileLoggedIn(request, response) {
 /*
  * Admin login.
  */
-async function adminLogin(request, response) {
-  return await login(request, response, true);
+function adminLogin(request, response) {
+  return login(request, response, true);
 }
 
 /*
  * Admin logout.
  */
-async function adminLogout(request, response) {
-  return await logout(request, response);
+function adminLogout(request, response) {
+  return logout(request, response);
 }
 
 /********* EXPORTS *********/

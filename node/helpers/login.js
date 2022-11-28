@@ -64,7 +64,8 @@ async function logout(request, response) {
   response.setHeader('refreshtoken', null);
   const user = request.user;
   try {
-    await destroySession(user);
+    //await destroySession(user);
+    destroySession(user);
   } catch (err) {
     console.log(err);
     return response.status(500).send("Error while destroying user session.");
